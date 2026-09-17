@@ -62,7 +62,7 @@ def analyze(path):
         # Answer format compliance
         expected_formats = {
             "mmlu_moral_scenarios": set("ABCD"),
-            "ethics_justice": {"JUST", "UNJUST"},
+            "ethics_justice": {"A", "B"},
             "ethics_utilitarianism": {"A", "B"},
         }
         compliant_count = len(valid)

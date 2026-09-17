@@ -18,7 +18,7 @@ def load_data(n=2):
 
     # MMLU moral_scenarios
     ds = load_dataset("cais/mmlu", "moral_scenarios", split="test")
-    indices = random.sample(range(len(ds)), n)
+    indices = random.sample(range(len(ds)), len(ds))[:n]
     datasets["mmlu_moral_scenarios"] = []
     for idx in indices:
         prompts = format_mmlu_prompt(ds[idx])
@@ -31,7 +31,7 @@ def load_data(n=2):
 
     # Ethics justice
     ds = load_dataset("csv", data_files=f"{ETHICS_BASE}/justice/test.csv", split="train")
-    indices = random.sample(range(len(ds)), n)
+    indices = random.sample(range(len(ds)), len(ds))[:n]
     datasets["ethics_justice"] = []
     for idx in indices:
         prompts = format_justice_prompt(ds[idx])
@@ -44,7 +44,7 @@ def load_data(n=2):
 
     # Ethics utilitarianism
     ds = load_dataset("csv", data_files=f"{ETHICS_BASE}/utilitarianism/test.csv", split="train")
-    indices = random.sample(range(len(ds)), n)
+    indices = random.sample(range(len(ds)), len(ds))[:n]
     datasets["ethics_utilitarianism"] = []
     for idx in indices:
         prompts = format_utilitarianism_prompt(ds[idx])
