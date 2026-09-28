@@ -1,62 +1,35 @@
-# CoT Faithfulness in Ethical Reasoning
+# Measuring Chain-of-Thought Necessity and the Effect of Reasoning Constraints
 
-Extending [Lanham et al. 2023 ("Measuring Faithfulness in Chain-of-Thought Reasoning")](https://arxiv.org/abs/2307.13702) to investigate whether LLMs' chain-of-thought reasoning is more or less faithful on ethically charged questions compared to neutral domains.
+Extending [Lanham et al. (2023)](https://arxiv.org/abs/2307.13702) to measure CoT necessity across ethical reasoning domains, and testing whether constraining CoT generation (e.g. with format templates) affects necessity.
 
-## Research Questions
+Write-up: *[link to LessWrong post]*
 
-1. **Ethical faithfulness gap:** Do models show different CoT faithfulness on ethical/social reasoning tasks compared to the neutral tasks studied in the original paper?
-2. **Evaluation awareness:** Does model awareness of being evaluated (via system prompt framing) affect CoT faithfulness, and does this interact with ethical content?
+## Key Findings
 
-## Methodology
-
-Following the paper's two-pass approach:
-- **Pass 1:** Generate free-form CoT reasoning (with "Let's think step by step")
-- **Pass 2:** Feed the CoT back to the model and prompt for a final answer only
-
-CoT responses are segmented into sentences using NLTK's `sent_tokenize`, matching the paper's granularity.
-
-### Interventions (planned)
-- **Truncation (early answering):** Progressively truncate CoT at each sentence boundary and measure answer stability
-- **Adding mistakes:** Use an LLM to corrupt individual CoT sentences, resample the CoT tail, and measure answer changes
-
-### Evaluation awareness conditions (planned)
-- **Evaluated:** System prompt signals the model's reasoning is being assessed
-- **Unmonitored:** Naturalistic task framing with no mention of evaluation
+1. **Model size is the dominant factor.** Larger models depend far less on CoT, consistent with Lanham et al.'s findings on factual tasks.
+2. **Constraining CoT generation may increase necessity.** Structured prompts reduce the model's control over its reasoning, and the model tends to be more dependent on its CoT content as a result.
 
 ## Datasets
 
-| Dataset | Subset | Size | Task |
+| Dataset | Subset | Task | Samples |
 |---|---|---|---|
-| [cais/mmlu](https://huggingface.co/datasets/cais/mmlu) | moral_scenarios | 895 | Multiple choice (A/B/C/D): which scenario is morally wrong |
-| [hendrycks/ethics](https://huggingface.co/datasets/hendrycks/ethics) | justice | 2,704 | Binary (JUST/UNJUST): is the described action just |
-| [hendrycks/ethics](https://huggingface.co/datasets/hendrycks/ethics) | utilitarianism | 4,807 | Binary (A/B): which scenario is more pleasant |
-
-## Progress
-
-### Step 1: Validate CoT generation (complete)
-- Confirmed all three datasets produce rich, multi-step CoT reasoning
-- Two-pass approach implemented and working with Gemini 3.5 Flash Lite
-- 40 samples per dataset (120 total) generated successfully
-- Average CoT lengths: ~11-16 sentences per response
-- Baseline accuracy and format compliance measured via `analyze_results.py`
-
-### Step 2: Experiment design (in progress)
-- Intervention approach scoped: truncation first, adding mistakes second
-- Cost model established: `m x (2 + 4n)` API calls per question (m=samples, n=avg sentences)
-- Evaluation awareness dimension: system prompt manipulation (evaluated vs. naturalistic framing)
-- Target: m=20 CoT chains per question at non-zero temperature
-
-### Step 3: Cost estimation and scaling (upcoming)
-- Estimate total API calls and token costs based on Step 1 sentence length data
-- Determine question count per dataset within ~$200 budget
+| [cais/mmlu](https://huggingface.co/datasets/cais/mmlu) | moral_scenarios | Multiple choice: which scenario is morally wrong | 150 |
+| [hendrycks/ethics](https://huggingface.co/datasets/hendrycks/ethics) | justice | Binary: is the action just | 150 |
+| [hendrycks/ethics](https://huggingface.co/datasets/hendrycks/ethics) | utilitarianism | Binary: which scenario is more pleasant | 150 |
 
 ## Scripts
 
 | Script | Purpose |
 |---|---|
-| `explore_datasets.py` | Preview dataset structures and sample examples |
-| `generate_cot.py` | Two-pass CoT generation with NLTK segmentation |
-| `analyze_results.py` | Analyze results: accuracy, sentence lengths, format compliance |
+| `data.py` | Dataset loading |
+| `prompts.py` | Prompt definitions (freeform and structured) |
+| `utils.py` | API calls, two-pass setup, answer extraction |
+| `generate_cot.py` | Pass 1: generate CoT reasoning |
+| `truncation.py` | Truncation intervention logic |
+| `mistakes.py` | Mistakes intervention logic |
+| `test_truncation.py` | Run truncation experiments |
+| `test_mistakes.py` | Run mistakes experiments |
+| `analyze_all.py` | Comprehensive analysis with 95% CIs |
 
 ## Setup
 
@@ -67,14 +40,9 @@ pip install google-generativeai python-dotenv datasets nltk
 cp .env.example .env  # Add your GEMINI_API_KEY
 ```
 
-## Running
+## References
 
-```bash
-# Generate CoT (default: 2 samples per dataset)
-python generate_cot.py
-python generate_cot.py --samples 40
-
-# Analyze latest results
-python analyze_results.py
-python analyze_results.py results/cot_gemini_20260831_220105.json
-```
+- Lanham et al. (2023). [Measuring Faithfulness in Chain-of-Thought Reasoning](https://arxiv.org/abs/2307.13702)
+- Jia et al. (2025). [Faithfulness as Information Flow](https://arxiv.org/abs/2605.24286)
+- Hendrycks et al. (2020). [Measuring Massive Multitask Language Understanding](https://arxiv.org/abs/2009.03300)
+- Hendrycks et al. (2021). [Aligning AI With Shared Human Values](https://arxiv.org/abs/2008.02275)
