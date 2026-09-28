@@ -52,6 +52,12 @@ def call_gemini(prompt, model="gemini-3.5-flash-lite", max_retries=3):
                 contents=contents,
                 config={"temperature": 0},
             )
+            if response.text is None:
+                if attempt < max_retries - 1:
+                    print(f"  Retry {attempt+1}/{max_retries-1}: empty response")
+                    time.sleep(4)
+                    continue
+                return "ERROR: empty response"
             return response.text
         except Exception as e:
             if attempt < max_retries - 1 and ("503" in str(e) or "UNAVAILABLE" in str(e) or "500" in str(e)):
